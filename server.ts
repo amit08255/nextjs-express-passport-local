@@ -1,4 +1,4 @@
-const express = require('express');
+import express from 'express';
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 const bodyParser = require("body-parser");
@@ -19,7 +19,7 @@ const port = process.env.PORT || 7000;
 
 const LOGIN_PAGE_URL = "/login";
 
-const authenticationMiddleware = (req, res, next) => {
+const authenticationMiddleware = (req: any, res: express.Response, next: express.NextFunction) => {
 
     if (req.isAuthenticated()) {
       return next()
@@ -56,7 +56,7 @@ app
     server.use(passport.initialize());
     server.use(passport.session());
 
-    passport.use(new LocalStrategy(function(username, password, done) {
+    passport.use(new LocalStrategy(function(username: any, password: any, done: any) {
 
       if (username !="admin") {
         return done(null, false, { message: 'Incorrect username.' });
@@ -74,14 +74,14 @@ app
 
     }));
 
-    passport.serializeUser(function (user, done) {
+    passport.serializeUser(function (user: any, done: any) {
         done(null, user.token + "--magic08255--" + user.codename);
     });
   
-    passport.deserializeUser(function (id, done) {
+    passport.deserializeUser(function (id: any, done: any) {
         
         let userAuth = id.split("--magic08255--");
-
+        
         let user = {
           token: userAuth[0],
           codename: userAuth[1]
@@ -90,23 +90,24 @@ app
         done(null, user)
     });
 
-    server.post('/login', passport.authenticate('local'), function(req, res) {
+    server.post('/login', passport.authenticate('local'), function(req:express.Request, res:express.Response) {
+      console.log(req);
       res.redirect('/');
     });
 
-  server.get("/protected", authenticationMiddleware, (req, res) => {
-        const actualPage = '/protected';
-        const queryParams = {};
-        app.render(req, res, actualPage, queryParams);
+  server.get("/dashboard", authenticationMiddleware, (req:express.Request, res:express.Response) => {
+    const actualPage = '/dashboard';
+		const queryParams = {};
+		app.render(req, res, actualPage, queryParams);
   });
 
-  server.get('*', (req, res) => {
+  server.get('*', (req:express.Request, res:express.Response) => {
     return handle(req, res);
   });
 
     server.listen(port);
   })
-  .catch((ex) => {
+  .catch((ex: { stack: any; }) => {
     console.error(ex.stack);
     process.exit(1);
   });
